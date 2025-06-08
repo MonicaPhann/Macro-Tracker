@@ -1,7 +1,8 @@
 from pulp import *
 import pandas as pd
+import matplotlib.pyplot as plt
 
-#Math for macros
+# Function to get valid user input for weight and goal
 def get_valid_input():
     while True:
         try:
@@ -19,6 +20,7 @@ def get_valid_input():
             print(f"Input error: {e}")
             print("Please try again.\n")
 
+# Function to calculate macros based on weight and goal
 def macro_calc(weight_lb, goal):
     if goal == "lose":
         calories = 13 * weight_lb
@@ -49,7 +51,7 @@ calories,protein_g, carbs_g, fat_g = macro_calc(weight_lb, goal)
 prob = LpProblem("MacroTracker", LpMinimize)
 
 # Define the decision variables
-#Lp Variable(name, lowBound=0, upBound=None, cat='Continuous')
+# Lp Variable(name, lowBound=0, upBound=None, cat='Continuous')
 
 x1 = LpVariable("Chicken", 0, None, LpInteger)
 x2 = LpVariable("Rice", 0, None, LpInteger)
@@ -74,11 +76,21 @@ prob += x3 + x4>= 0.50 * total_mass, "VeggieShare"
 
 prob.writeLP("MacroTracker.lp")
 
+# Solving the problem
 prob.solve()
 print("Status:", LpStatus[prob.status])
 for v in prob.variables():
     print(v.name, "=", str(v.varValue)+"g")
 
+# Display the total cost and macro distribution
 print(f"Total Cost = ${value(prob.objective):.2f}")
 print("The Plate Distribution is: 1/2 Veggies, 1/4 Protein, 1/4 Carbs")
 print(f"Calories: {calories:.2f}, Protein: {protein_g:.2f}g, Carbs: {carbs_g:.2f}g, Fat: {fat_g:.2f}g")
+
+# Plotting the macro distribution
+labels = ['Protein', 'Carbs', 'Fats']
+values = [protein_g, carbs_g, fat_g]
+plt.pie(values, labels=labels, autopct='%1.1f%%')
+plt.show()
+
+#test
